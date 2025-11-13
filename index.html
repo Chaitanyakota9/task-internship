@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Statistics</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            font-weight: 500;
+            color: #666;
+        }
+
+        .stat-value {
+            color: #333;
+        }
+
+        .error {
+            color: #f44336;
+            margin-top: 10px;
+            padding: 10px;
+            background: #ffebee;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .cache-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .cache-hit {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .cache-miss {
+            background: #fff3e0;
+            color: #e65100;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stock Statistics</h1>
+        
+        <form id="statsForm">
+            <div class="form-group">
+                <label for="ticker">Ticker Symbol</label>
+                <input type="text" id="ticker" placeholder="e.g., MSFT, AAPL" required>
+            </div>
+
+            <div class="form-group">
+                <label for="startDate">Start Date</label>
+                <input type="date" id="startDate" required>
+            </div>
+
+            <div class="form-group">
+                <label for="endDate">End Date</label>
+                <input type="date" id="endDate" required>
+            </div>
+
+            <div class="form-group">
+                <label for="dataSource">Data Source</label>
+                <select id="dataSource">
+                    <option value="live">Live (yfinance)</option>
+                    <option value="msft">Offline - MSFT 2024</option>
+                    <option value="aapl">Offline - AAPL 2024</option>
+                    <option value="amzn">Offline - AMZN Sample</option>
+                    <option value="googl">Offline - GOOGL Sample</option>
+                    <option value="tsla">Offline - TSLA Sample</option>
+                </select>
+            </div>
+
+            <button type="submit" id="submitBtn">Get Statistics</button>
+        </form>
+
+        <div class="error" id="error"></div>
+
+        <div class="results" id="results">
+            <h2>Results</h2>
+            <div id="statsContent"></div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('statsForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const results = document.getElementById('results');
+        const statsContent = document.getElementById('statsContent');
+        const errorDiv = document.getElementById('error');
+
+        // Set default dates
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setMonth(startDate.getMonth() - 1);
+        
+        document.getElementById('endDate').valueAsDate = endDate;
+        document.getElementById('startDate').valueAsDate = startDate;
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const ticker = document.getElementById('ticker').value.toUpperCase();
+            const start = document.getElementById('startDate').value;
+            const end = document.getElementById('endDate').value;
+            const dataSource = document.getElementById('dataSource').value;
+
+            // Hide previous results/errors
+            results.classList.remove('show');
+            errorDiv.classList.remove('show');
+            
+            // Build API URL
+            let url = `http://127.0.0.1:8000/api/stats?ticker=${ticker}&start=${start}&end=${end}`;
+            
+            if (dataSource !== 'live') {
+                const fileMap = {
+                    'msft': 'data/msft_2024.csv',
+                    'aapl': 'data/aapl_2024.csv',
+                    'amzn': 'data/amzn_sample.csv',
+                    'googl': 'data/googl_sample.csv',
+                    'tsla': 'data/tsla_sample.csv'
+                };
+                url += `&sample_file=${fileMap[dataSource]}`;
+            }
+
+            // Disable button
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Loading...';
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Failed to fetch data');
+                }
+
+                // Display results
+                const cacheStatus = data.cache_hit 
+                    ? '<span class="cache-badge cache-hit">Cached</span>' 
+                    : '<span class="cache-badge cache-miss">Fresh</span>';
+
+                statsContent.innerHTML = `
+                    <div class="stat-row">
+                        <span class="stat-label">Symbol</span>
+                        <span class="stat-value">${data.symbol}${cacheStatus}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Period</span>
+                        <span class="stat-value">${data.period.start} to ${data.period.end}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">High</span>
+                        <span class="stat-value">$${data.high.toFixed(2)}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Low</span>
+                        <span class="stat-value">$${data.low.toFixed(2)}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Average Close</span>
+                        <span class="stat-value">$${data.average_close.toFixed(2)}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Last Close</span>
+                        <span class="stat-value">$${data.last_close.toFixed(2)}</span>
+                    </div>
+                `;
+
+                results.classList.add('show');
+
+            } catch (error) {
+                errorDiv.textContent = error.message;
+                errorDiv.classList.add('show');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Get Statistics';
+            }
+        });
+    </script>
+</body>
+</html>
+
