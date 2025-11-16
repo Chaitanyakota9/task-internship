@@ -2,7 +2,6 @@
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import JSONResponse, FileResponse
-from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
 import uvicorn
 from datetime import datetime
@@ -15,31 +14,10 @@ app = FastAPI(
     version="1.0.0"
 )
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 
 @app.get("/")
 async def root():
     return FileResponse("index.html")
-
-
-@app.get("/api")
-async def api_info():
-    return {
-        "message": "Stock Statistics API",
-        "version": "1.0.0",
-        "endpoints": {
-            "/api/stats": "GET - Fetch stock statistics for a ticker",
-            "/health": "GET - Health check endpoint"
-        }
-    }
-
 
 @app.get("/health")
 async def health_check():

@@ -1,158 +1,105 @@
-# Stock Statistics API 📊
+# Stock Statistics API
 
-A FastAPI-based REST API that fetches stock statistics on-demand from yfinance with intelligent caching.
+FastAPI REST API for stock statistics with caching and Docker support.
 
 ## Features
 
-✅ **On-demand data fetching** from yfinance  
-✅ **Intelligent caching** for faster subsequent requests  
-✅ **Offline testing** with CSV sample files  
-✅ **Lazy imports** - yfinance only loads when needed  
-✅ **Clean API design** with automatic documentation  
+- REST API with FastAPI
+- In-memory caching
+- Docker containerization
+- Automated testing
+- CI/CD pipeline
 
-## Setup
-
-### 1. Create Virtual Environment
+## Quick Start
 
 ```bash
+# Local
 python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-### 2. Install Dependencies
-
-```bash
+source venv/bin/activate
 pip install -r requirements.txt
-```
-
-## Running the API
-
-### Start the Server
-
-```bash
 python api.py
+
+# Docker
+./docker-setup.sh
 ```
 
-The API will start on `http://127.0.0.1:8000`
-
-### Access Documentation
-
-- **Swagger UI**: http://127.0.0.1:8000/docs
-- **ReDoc**: http://127.0.0.1:8000/redoc
-
-## API Endpoints
-
-### GET `/api/stats`
-
-Fetch stock statistics for a given ticker and date range.
-
-**Query Parameters:**
-- `ticker` (required): Stock ticker symbol (e.g., MSFT, AAPL)
-- `start` (required): Start date in YYYY-MM-DD format
-- `end` (required): End date in YYYY-MM-DD format
-- `timeout` (optional): Request timeout in seconds (default: 15.0)
-- `use_cache` (optional): Enable caching (default: true)
-- `refresh_cache` (optional): Force refresh cache (default: false)
-- `sample_file` (optional): Path to CSV file for offline testing
-
-**Example Request:**
+## API Usage
 
 ```bash
-# Live data from yfinance
-curl "http://127.0.0.1:8000/api/stats?ticker=MSFT&start=2023-01-01&end=2023-12-31"
-
-# Offline testing with CSV
-curl "http://127.0.0.1:8000/api/stats?ticker=MSFT&start=2024-11-01&end=2024-11-05&sample_file=data/msft_2024.csv"
+curl "http://localhost:8000/api/stats?ticker=MSFT&start=2024-01-01&end=2024-12-31"
 ```
 
-**Example Response:**
-
+**Response:**
 ```json
 {
   "symbol": "MSFT",
-  "period": {
-    "start": "2024-11-01",
-    "end": "2024-11-05"
-  },
   "high": 468.35,
   "low": 366.5,
   "average_close": 420.31,
-  "last_close": 421.5,
   "cache_hit": false
 }
 ```
 
-### GET `/health`
-
-Health check endpoint.
+## Testing
 
 ```bash
-curl "http://127.0.0.1:8000/health"
+pytest
 ```
 
-**Response:**
+## Docker Installation & Startup
 
-```json
-{
-  "status": "healthy",
-  "timestamp": "2024-11-12T17:30:00.000000"
-}
-```
+**Prerequisites:** Docker installed, port 8000 available
 
-## CLI Tool
-
-You can also use the command-line interface:
-
+**Build & Run:**
 ```bash
-python main.py --symbol MSFT --start 2024-11-01 --end 2024-11-05 --debug
+docker build -t stock-api:latest .
+docker run -d -p 8000:8000 --name stock-api-container stock-api:latest
 ```
 
-**CLI Options:**
-- `--symbol`: Stock ticker symbol
-- `--start`: Start date (YYYY-MM-DD)
-- `--end`: End date (YYYY-MM-DD)
-- `--timeout`: Request timeout in seconds
-- `--debug`: Enable debug output
-- `--sample-file`: Path to CSV file for offline testing
-- `--no-cache`: Disable caching
-- `--refresh-cache`: Force refresh cache
+**Verify:**
+```bash
+docker ps
+curl http://localhost:8000/health
+```
 
-## Data Files
+**Access:** http://localhost:8000
 
-The `data/` directory contains sample CSV files for offline testing:
+**Manage:**
+```bash
+docker stop stock-api-container
+docker start stock-api-container
+docker logs -f stock-api-container
+docker rm -f stock-api-container
+```
 
-- `msft_2024.csv` - Full 2024 MSFT data (252 trading days)
-- `aapl_2024.csv` - Full 2024 AAPL data (252 trading days)
-- `amzn_sample.csv` - Sample AMZN data
-- `googl_sample.csv` - Sample GOOGL data
-- `tsla_sample.csv` - Sample TSLA data
+## CI/CD Pipeline Setup
 
-## Caching
+**Automated workflow using GitHub Actions:**
 
-The API implements intelligent caching:
+```
+Trigger: Push to main or Pull Request
 
-- **Cache Key**: `(symbol, start_date, end_date, sample_file, timeout)`
-- **Cache Hit**: Returns `"cache_hit": true` for cached responses
-- **Cache Miss**: Returns `"cache_hit": false` for fresh data
+Stage 1: Test
+  - Checkout repository
+  - Setup Python 3.13
+  - Install dependencies (pip install -r requirements.txt)
+  - Run pytest (14 tests)
+  - If tests fail → Stop pipeline
 
-Subsequent requests with the same parameters return instantly from cache!
+Stage 2: Build
+  - Setup Docker Buildx
+  - Build image (docker build -t stock-api:latest .)
+  - Test container health (docker run + curl /health)
+  - If build/health fails → Stop pipeline
 
-## Performance
+Stage 3: Deploy (main branch only)
+  - Tag image with version
+  - Push to Docker Hub/ECR
+  - Deploy to production (AWS ECS/GCP Cloud Run/Azure ACI)
+  - Run smoke tests
+  - Send notification
+```
 
-- **Lazy Import**: yfinance only loads when making network requests
-- **Instant Offline Mode**: CSV files load in <1ms
-- **Cached Responses**: Return in <1ms after first request
+**Pipeline execution time:** ~5-7 minutes
 
-## Error Handling
-
-The API returns appropriate HTTP status codes:
-
-- `200`: Success
-- `400`: Invalid date format or parameters
-- `404`: Data not found for the given ticker/date range
-- `500`: Internal server error
-
-## License
-
-MIT License
-
+MIT License   
