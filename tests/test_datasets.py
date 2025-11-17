@@ -1,12 +1,15 @@
 import pytest
 import pandas as pd
 import os
-from stats import get_stock_stats
+import sys
+sys.path.insert(0, '..')
+
+from stats import fetch
 
 
-class TestDatasetFiles:
+class TestFiles:
     
-    def test_all_datasets_exist(self):
+    def test_exist(self):
         files = [
             "data/msft_2024.csv",
             "data/aapl_2024.csv",
@@ -18,30 +21,30 @@ class TestDatasetFiles:
             assert os.path.exists(file), f"{file} not found"
 
 
-class TestDatasetStructure:
+class TestStructure:
     
-    def test_datasets_have_required_columns(self):
+    def test_columns(self):
         df = pd.read_csv("data/msft_2024.csv", index_col=0)
         required = ["Open", "High", "Low", "Close", "Volume"]
         for col in required:
             assert col in df.columns
 
 
-class TestDataQuality:
+class TestQuality:
     
-    def test_no_negative_prices(self):
+    def test_prices(self):
         df = pd.read_csv("data/msft_2024.csv", index_col=0)
         assert (df["High"] > 0).all()
         assert (df["Low"] > 0).all()
     
-    def test_high_greater_than_low(self):
+    def test_range(self):
         df = pd.read_csv("data/aapl_2024.csv", index_col=0)
         assert (df["High"] >= df["Low"]).all()
 
 
-class TestDatasetUsability:
+class TestUsability:
     
-    def test_datasets_work_with_stats_function(self):
+    def test_fetch(self):
         datasets = [
             ("MSFT", "data/msft_2024.csv"),
             ("AAPL", "data/aapl_2024.csv"),
@@ -49,7 +52,7 @@ class TestDatasetUsability:
         ]
         
         for symbol, file in datasets:
-            result = get_stock_stats(
+            result = fetch(
                 symbol=symbol,
                 start="2024-01-01",
                 end="2024-01-10",

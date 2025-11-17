@@ -1,49 +1,63 @@
 # Stock Statistics API
 
-FastAPI REST API for stock statistics with caching and Docker support.
+Simple FastAPI REST API for stock statistics with caching and Docker support.
 
 ## Features
 
-- REST API with FastAPI
-- In-memory caching
-- Docker containerization
-- Automated testing
-- CI/CD pipeline
+- Clean REST API with FastAPI
+- Persistent caching with 1-hour TTL
+- Batch queries (up to 10 stocks)
+- Stock comparison endpoint
+- Docker support
+- Comprehensive tests
 
 ## Quick Start
 
 ```bash
-# Local
+# Local setup
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 python api.py
 
 # Docker
-./docker-setup.sh
+./scripts/docker-setup.sh
 ```
 
-## API Usage
+## API Endpoints
 
+### Get Single Stock Stats
 ```bash
 curl "http://localhost:8000/api/stats?ticker=MSFT&start=2024-01-01&end=2024-12-31"
 ```
 
-**Response:**
-```json
-{
-  "symbol": "MSFT",
-  "high": 468.35,
-  "low": 366.5,
-  "average_close": 420.31,
-  "cache_hit": false
-}
+### Compare Multiple Stocks
+```bash
+curl "http://localhost:8000/api/compare?tickers=AAPL,MSFT,GOOGL&start=2024-01-01&end=2024-12-31"
+```
+
+### Batch Query
+```bash
+curl -X POST "http://localhost:8000/api/stats/batch" \
+  -H "Content-Type: application/json" \
+  -d '{"tickers": ["AAPL", "MSFT"], "start": "2024-01-01", "end": "2024-12-31"}'
 ```
 
 ## Testing
 
 ```bash
 pytest
+```
+
+## Project Structure
+
+```
+├── api.py           # Main API (run this!)
+├── stats.py         # Stock statistics logic
+├── tests/           # Test files
+├── scripts/         # Helper scripts
+├── data/            # Sample CSV files
+└── index.html       # Web interface
 ```
 
 ## Docker Installation & Startup

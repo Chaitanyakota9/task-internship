@@ -1,21 +1,24 @@
 import pytest
-from stats import get_stock_stats, _make_cache_key, _CACHE
+import sys
+sys.path.insert(0, '..')
+
+from stats import fetch, make_key, _CACHE
 
 
-class TestCacheKey:
+class TestKey:
     
-    def test_cache_key_uppercase(self):
-        key = _make_cache_key("msft", "2024-01-01", "2024-01-31", None, None)
+    def test_uppercase(self):
+        key = make_key("msft", "2024-01-01", "2024-01-31", None, None)
         assert key[0] == "MSFT"
 
 
-class TestStatsCalculation:
+class TestCalculation:
     
     def setup_method(self):
         _CACHE.clear()
     
-    def test_basic_stats_calculation(self):
-        result = get_stock_stats(
+    def test_basic(self):
+        result = fetch(
             symbol="MSFT",
             start="2024-11-01",
             end="2024-11-05",
@@ -34,12 +37,12 @@ class TestStatsCalculation:
         assert result["cache_hit"] is False
 
 
-class TestCaching:
+class TestCache:
     
     def setup_method(self):
         _CACHE.clear()
     
-    def test_cache_hit_on_second_request(self):
+    def test_hit(self):
         params = {
             "symbol": "AAPL",
             "start": "2024-01-01",
@@ -47,17 +50,17 @@ class TestCaching:
             "sample_file": "data/aapl_2024.csv"
         }
         
-        result1 = get_stock_stats(**params)
+        result1 = fetch(**params)
         assert result1["cache_hit"] is False
         
-        result2 = get_stock_stats(**params)
+        result2 = fetch(**params)
         assert result2["cache_hit"] is True
 
 
-class TestErrorHandling:
+class TestErrors:
     
-    def test_file_not_found(self):
-        result = get_stock_stats(
+    def test_file_error(self):
+        result = fetch(
             symbol="FAKE",
             start="2024-01-01",
             end="2024-01-31",

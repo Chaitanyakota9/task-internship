@@ -8,7 +8,7 @@ CacheKey = Tuple[str, str, str, Optional[str], Optional[float]]
 _CACHE: Dict[CacheKey, Dict[str, Any]] = {}
 
 
-def _make_cache_key(
+def make_key(
     symbol: str,
     start: str,
     end: str,
@@ -18,7 +18,7 @@ def _make_cache_key(
     return (symbol.upper(), start, end, sample_file, timeout)
 
 
-def get_stock_stats(
+def fetch(
     symbol: str,
     start: str,
     end: str,
@@ -30,7 +30,7 @@ def get_stock_stats(
     refresh_cache: bool = False,
 ) -> Dict[str, Any]:
     period = {"start": start, "end": end}
-    cache_key = _make_cache_key(symbol, start, end, sample_file, timeout)
+    cache_key = make_key(symbol, start, end, sample_file, timeout)
 
     if refresh_cache:
         if debug:

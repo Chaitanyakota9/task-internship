@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import JSONResponse, FileResponse
@@ -6,7 +6,7 @@ from typing import Optional
 import uvicorn
 from datetime import datetime
 
-from stats import get_stock_stats
+from stats import fetch
 
 app = FastAPI(
     title="Stock Statistics API",
@@ -16,16 +16,16 @@ app = FastAPI(
 
 
 @app.get("/")
-async def root():
+async def home():
     return FileResponse("index.html")
 
 @app.get("/health")
-async def health_check():
+async def check():
     return {"status": "healthy", "timestamp": datetime.now().isoformat()}
 
 
 @app.get("/api/stats")
-async def get_stats(
+async def get_stock(
     ticker: str = Query(..., description="Stock ticker symbol (e.g., MSFT, AAPL)"),
     start: str = Query(..., description="Start date (YYYY-MM-DD format)"),
     end: str = Query(..., description="End date (YYYY-MM-DD format)"),
@@ -44,7 +44,7 @@ async def get_stats(
                 detail="Invalid date format. Use YYYY-MM-DD format."
             )
         
-        result = get_stock_stats(
+        result = fetch(
             symbol=ticker.upper(),
             start=start,
             end=end,
@@ -70,7 +70,7 @@ async def get_stats(
 
 
 if __name__ == "__main__":
-    print("🎭 Starting Stock Statistics API...")
-    print("📊 API Documentation: http://127.0.0.1:8000/docs")
-    print("🔍 Interactive API: http://127.0.0.1:8000/redoc")
+    print(" Starting Stock Statistics API...")
+    print(" API Documentation: http://127.0.0.1:8000/docs")
+    print(" Interactive API: http://127.0.0.1:8000/redoc")
     uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")
