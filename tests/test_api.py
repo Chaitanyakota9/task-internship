@@ -1,7 +1,5 @@
 import pytest
 from fastapi.testclient import TestClient
-import sys
-sys.path.insert(0, '..')
 
 from api import app
 from stats import _CACHE

@@ -1,8 +1,6 @@
 import pytest
 import pandas as pd
 import os
-import sys
-sys.path.insert(0, '..')
 
 from stats import fetch
 

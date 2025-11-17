@@ -1,6 +1,4 @@
 import pytest
-import sys
-sys.path.insert(0, '..')
 
 from stats import fetch, make_key, _CACHE
 
