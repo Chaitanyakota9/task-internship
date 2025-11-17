@@ -5,7 +5,7 @@ Simple FastAPI REST API for stock statistics with caching and Docker support.
 ## Features
 
 - Clean REST API with FastAPI
-- Persistent caching with 1-hour TTL
+- Simple in-memory caching
 - Batch queries (up to 10 stocks)
 - Stock comparison endpoint
 - Docker support
@@ -15,8 +15,9 @@ Simple FastAPI REST API for stock statistics with caching and Docker support.
 
 ```bash
 # Local setup
-python3 -m venv venv
-source venv/bin/activate
+cd yfinance
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 python api.py
 
@@ -64,15 +65,16 @@ For local testing:
 ## Project Structure
 
 ```
-├── api.py           # Main API (run this!)
+├── api.py           # Main API (run this)
 ├── stats.py         # Stock statistics logic
+├── cache.py         # Simple in-memory cache
 ├── tests/           # Test files
 ├── scripts/         # Helper scripts
 │   ├── docker-setup.sh    # Docker setup script
 │   ├── run_tests.sh       # Test runner script
 │   └── smoke_tests.sh     # Smoke tests for deployment
 ├── data/            # Sample CSV files
-└── index.html       # Web interface
+└── index.html       # Simple web UI
 ```
 
 ## Docker Installation & Startup
@@ -104,7 +106,7 @@ docker rm -f stock-api-container
 ## CI/CD Pipeline
 
 **Current setup:**
-- Unit tests run via pytest (14 tests)
+- Unit and API tests run via pytest
 - Docker image can be built locally
 - Smoke tests available for deployment verification
 

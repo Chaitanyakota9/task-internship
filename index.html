@@ -12,35 +12,36 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: #f5f5f5;
             padding: 20px;
             line-height: 1.6;
         }
 
         .container {
-            max-width: 800px;
+            max-width: 600px;
             margin: 0 auto;
             background: white;
-            padding: 30px;
+            padding: 24px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
         }
 
         h1 {
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             color: #333;
+            font-size: 24px;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
             color: #555;
-            font-weight: 500;
+            font-size: 14px;
         }
 
         input, select {
@@ -51,24 +52,16 @@
             font-size: 14px;
         }
 
-        input:focus, select:focus {
-            outline: none;
-            border-color: #4CAF50;
-        }
-
         button {
             background: #4CAF50;
             color: white;
-            padding: 12px 24px;
+            padding: 10px 16px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 15px;
             width: 100%;
-        }
-
-        button:hover {
-            background: #45a049;
+            margin-top: 8px;
         }
 
         button:disabled {
@@ -77,9 +70,9 @@
         }
 
         .results {
-            margin-top: 30px;
-            padding: 20px;
-            background: #f9f9f9;
+            margin-top: 20px;
+            padding: 16px;
+            background: #fafafa;
             border-radius: 4px;
             display: none;
         }
@@ -91,8 +84,9 @@
         .stat-row {
             display: flex;
             justify-content: space-between;
-            padding: 10px 0;
+            padding: 6px 0;
             border-bottom: 1px solid #eee;
+            font-size: 14px;
         }
 
         .stat-row:last-child {
@@ -100,20 +94,21 @@
         }
 
         .stat-label {
-            font-weight: 500;
             color: #666;
         }
 
         .stat-value {
-            color: #333;
+            color: #222;
+            font-weight: 500;
         }
 
         .error {
-            color: #f44336;
-            margin-top: 10px;
+            margin-top: 12px;
             padding: 10px;
-            background: #ffebee;
             border-radius: 4px;
+            background: #ffebee;
+            color: #c62828;
+            font-size: 14px;
             display: none;
         }
 
@@ -121,20 +116,20 @@
             display: block;
         }
 
-        .cache-badge {
+        .badge {
             display: inline-block;
-            padding: 4px 8px;
+            margin-left: 8px;
+            padding: 2px 6px;
             border-radius: 4px;
-            font-size: 12px;
-            margin-left: 10px;
+            font-size: 11px;
         }
 
-        .cache-hit {
+        .badge.cache {
             background: #e8f5e9;
             color: #2e7d32;
         }
 
-        .cache-miss {
+        .badge.fresh {
             background: #fff3e0;
             color: #e65100;
         }
@@ -143,112 +138,172 @@
 <body>
     <div class="container">
         <h1>Stock Statistics</h1>
-        
+
         <form id="statsForm">
             <div class="form-group">
-                <label for="ticker">Ticker Symbol</label>
-                <input type="text" id="ticker" placeholder="e.g., MSFT, AAPL" required>
+                <label for="ticker">Ticker</label>
+                <input id="ticker" type="text" placeholder="MSFT, AAPL" required>
             </div>
 
             <div class="form-group">
-                <label for="startDate">Start Date</label>
-                <input type="date" id="startDate" required>
+                <label for="start">Start date</label>
+                <input id="start" type="date" required>
             </div>
 
             <div class="form-group">
-                <label for="endDate">End Date</label>
-                <input type="date" id="endDate" required>
+                <label for="end">End date</label>
+                <input id="end" type="date" required>
             </div>
 
             <div class="form-group">
-                <label for="dataSource">Data Source</label>
-                <select id="dataSource">
+                <label for="source">Source</label>
+                <select id="source">
                     <option value="live">Live (yfinance)</option>
-                    <option value="msft">Offline - MSFT 2024</option>
-                    <option value="aapl">Offline - AAPL 2024</option>
-                    <option value="amzn">Offline - AMZN Sample</option>
-                    <option value="googl">Offline - GOOGL Sample</option>
-                    <option value="tsla">Offline - TSLA Sample</option>
+                    <option value="msft">MSFT sample</option>
+                    <option value="aapl">AAPL sample</option>
+                    <option value="amzn">AMZN sample</option>
+                    <option value="googl">GOOGL sample</option>
+                    <option value="tsla">TSLA sample</option>
                 </select>
             </div>
 
-            <button type="submit" id="submitBtn">Get Statistics</button>
+            <button id="submit" type="submit">Get stats</button>
         </form>
 
-        <div class="error" id="error"></div>
+        <div id="error" class="error"></div>
 
-        <div class="results" id="results">
-            <h2>Results</h2>
-            <div id="statsContent"></div>
+        <div id="results" class="results">
+            <div id="content"></div>
+        </div>
+
+        <hr style="margin: 24px 0;">
+
+        <form id="batchForm">
+            <h2 style="font-size: 18px; margin-bottom: 12px;">Batch stats</h2>
+            <div class="form-group">
+                <label for="batchTickers">Tickers (comma separated)</label>
+                <input id="batchTickers" type="text" placeholder="AAPL,MSFT,GOOGL">
+            </div>
+            <div class="form-group">
+                <label for="batchStart">Start date</label>
+                <input id="batchStart" type="date">
+            </div>
+            <div class="form-group">
+                <label for="batchEnd">End date</label>
+                <input id="batchEnd" type="date">
+            </div>
+            <button id="batchSubmit" type="submit">Get batch stats</button>
+        </form>
+
+        <div id="batchResults" class="results">
+            <div id="batchContent"></div>
+        </div>
+
+        <hr style="margin: 24px 0;">
+
+        <form id="compareForm">
+            <h2 style="font-size: 18px; margin-bottom: 12px;">Compare stocks</h2>
+            <div class="form-group">
+                <label for="compareTickers">Tickers (comma separated)</label>
+                <input id="compareTickers" type="text" placeholder="AAPL,MSFT,GOOGL">
+            </div>
+            <div class="form-group">
+                <label for="compareStart">Start date</label>
+                <input id="compareStart" type="date">
+            </div>
+            <div class="form-group">
+                <label for="compareEnd">End date</label>
+                <input id="compareEnd" type="date">
+            </div>
+            <button id="compareSubmit" type="submit">Compare</button>
+        </form>
+
+        <div id="compareResults" class="results">
+            <div id="compareContent"></div>
         </div>
     </div>
 
     <script>
         const form = document.getElementById('statsForm');
-        const submitBtn = document.getElementById('submitBtn');
+        const button = document.getElementById('submit');
         const results = document.getElementById('results');
-        const statsContent = document.getElementById('statsContent');
-        const errorDiv = document.getElementById('error');
+        const content = document.getElementById('content');
+        const errorBox = document.getElementById('error');
 
-        // Set default dates
-        const endDate = new Date();
-        const startDate = new Date();
-        startDate.setMonth(startDate.getMonth() - 1);
-        
-        document.getElementById('endDate').valueAsDate = endDate;
-        document.getElementById('startDate').valueAsDate = startDate;
+        const batchForm = document.getElementById('batchForm');
+        const batchButton = document.getElementById('batchSubmit');
+        const batchResults = document.getElementById('batchResults');
+        const batchContent = document.getElementById('batchContent');
 
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const ticker = document.getElementById('ticker').value.toUpperCase();
-            const start = document.getElementById('startDate').value;
-            const end = document.getElementById('endDate').value;
-            const dataSource = document.getElementById('dataSource').value;
+        const compareForm = document.getElementById('compareForm');
+        const compareButton = document.getElementById('compareSubmit');
+        const compareResults = document.getElementById('compareResults');
+        const compareContent = document.getElementById('compareContent');
 
-            // Hide previous results/errors
+        const today = new Date();
+        const monthAgo = new Date();
+        monthAgo.setMonth(monthAgo.getMonth() - 1);
+
+        document.getElementById('end').valueAsDate = today;
+        document.getElementById('start').valueAsDate = monthAgo;
+        document.getElementById('batchEnd').valueAsDate = today;
+        document.getElementById('batchStart').valueAsDate = monthAgo;
+        document.getElementById('compareEnd').valueAsDate = today;
+        document.getElementById('compareStart').valueAsDate = monthAgo;
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
             results.classList.remove('show');
-            errorDiv.classList.remove('show');
-            
-            // Build API URL
-            let url = `http://127.0.0.1:8000/api/stats?ticker=${ticker}&start=${start}&end=${end}`;
-            
-            if (dataSource !== 'live') {
-                const fileMap = {
-                    'msft': 'data/msft_2024.csv',
-                    'aapl': 'data/aapl_2024.csv',
-                    'amzn': 'data/amzn_sample.csv',
-                    'googl': 'data/googl_sample.csv',
-                    'tsla': 'data/tsla_sample.csv'
-                };
-                url += `&sample_file=${fileMap[dataSource]}`;
+            errorBox.classList.remove('show');
+
+            const ticker = document.getElementById('ticker').value.trim().toUpperCase();
+            const start = document.getElementById('start').value;
+            const end = document.getElementById('end').value;
+            const source = document.getElementById('source').value;
+
+            if (!ticker) {
+                errorBox.textContent = 'Please enter a ticker';
+                errorBox.classList.add('show');
+                return;
             }
 
-            // Disable button
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Loading...';
+            let url = `/api/stats?ticker=${encodeURIComponent(ticker)}&start=${start}&end=${end}`;
+
+            if (source !== 'live') {
+                const files = {
+                    msft: 'data/msft_2024.csv',
+                    aapl: 'data/aapl_2024.csv',
+                    amzn: 'data/amzn_sample.csv',
+                    googl: 'data/googl_sample.csv',
+                    tsla: 'data/tsla_sample.csv',
+                };
+                url += `&sample_file=${encodeURIComponent(files[source])}`;
+            }
+
+            button.disabled = true;
+            button.textContent = 'Loading...';
 
             try {
                 const response = await fetch(url);
                 const data = await response.json();
 
                 if (!response.ok) {
-                    throw new Error(data.detail || 'Failed to fetch data');
+                    throw new Error(data.detail || 'Request failed');
                 }
 
-                // Display results
-                const cacheStatus = data.cache_hit 
-                    ? '<span class="cache-badge cache-hit">Cached</span>' 
-                    : '<span class="cache-badge cache-miss">Fresh</span>';
+                const badge = data.cache_hit
+                    ? '<span class="badge cache">cache</span>'
+                    : '<span class="badge fresh">fresh</span>';
 
-                statsContent.innerHTML = `
+                content.innerHTML = `
                     <div class="stat-row">
                         <span class="stat-label">Symbol</span>
-                        <span class="stat-value">${data.symbol}${cacheStatus}</span>
+                        <span class="stat-value">${data.symbol}${badge}</span>
                     </div>
                     <div class="stat-row">
                         <span class="stat-label">Period</span>
-                        <span class="stat-value">${data.period.start} to ${data.period.end}</span>
+                        <span class="stat-value">${data.period.start} → ${data.period.end}</span>
                     </div>
                     <div class="stat-row">
                         <span class="stat-label">High</span>
@@ -259,26 +314,143 @@
                         <span class="stat-value">$${data.low.toFixed(2)}</span>
                     </div>
                     <div class="stat-row">
-                        <span class="stat-label">Average Close</span>
+                        <span class="stat-label">Average close</span>
                         <span class="stat-value">$${data.average_close.toFixed(2)}</span>
                     </div>
                     <div class="stat-row">
-                        <span class="stat-label">Last Close</span>
+                        <span class="stat-label">Last close</span>
                         <span class="stat-value">$${data.last_close.toFixed(2)}</span>
                     </div>
                 `;
 
                 results.classList.add('show');
-
-            } catch (error) {
-                errorDiv.textContent = error.message;
-                errorDiv.classList.add('show');
+            } catch (err) {
+                errorBox.textContent = err.message || 'Something went wrong';
+                errorBox.classList.add('show');
             } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Get Statistics';
+                button.disabled = false;
+                button.textContent = 'Get stats';
+            }
+        });
+
+        batchForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            batchResults.classList.remove('show');
+            errorBox.classList.remove('show');
+
+            const rawTickers = document.getElementById('batchTickers').value;
+            const start = document.getElementById('batchStart').value;
+            const end = document.getElementById('batchEnd').value;
+
+            const tickers = rawTickers
+                .split(',')
+                .map(t => t.trim().toUpperCase())
+                .filter(t => t.length > 0);
+
+            if (tickers.length === 0) {
+                errorBox.textContent = 'Please enter at least one ticker';
+                errorBox.classList.add('show');
+                return;
+            }
+
+            batchButton.disabled = true;
+            batchButton.textContent = 'Loading...';
+
+            try {
+                const response = await fetch('/api/stats/batch', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tickers, start, end })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Request failed');
+                }
+
+                const items = data.items || {};
+                const html = Object.keys(items).map(symbol => {
+                    const s = items[symbol];
+                    if (!s || s.high == null || s.low == null || s.average_close == null) {
+                        return '';
+                    }
+                    return `
+                        <div class="stat-row">
+                            <span class="stat-label">${symbol}</span>
+                            <span class="stat-value">
+                                High $${s.high.toFixed(2)},
+                                Low $${s.low.toFixed(2)},
+                                Avg $${s.average_close.toFixed(2)}
+                            </span>
+                        </div>
+                    `;
+                }).join('');
+
+                batchContent.innerHTML = html || '<p>No data</p>';
+                batchResults.classList.add('show');
+            } catch (err) {
+                errorBox.textContent = err.message || 'Something went wrong';
+                errorBox.classList.add('show');
+            } finally {
+                batchButton.disabled = false;
+                batchButton.textContent = 'Get batch stats';
+            }
+        });
+
+        compareForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            compareResults.classList.remove('show');
+            errorBox.classList.remove('show');
+
+            const tickers = document.getElementById('compareTickers').value.trim();
+            const start = document.getElementById('compareStart').value;
+            const end = document.getElementById('compareEnd').value;
+
+            if (!tickers) {
+                errorBox.textContent = 'Please enter at least one ticker';
+                errorBox.classList.add('show');
+                return;
+            }
+
+            compareButton.disabled = true;
+            compareButton.textContent = 'Loading...';
+
+            const url = `/api/compare?tickers=${encodeURIComponent(tickers)}&start=${start}&end=${end}`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Request failed');
+                }
+
+                const items = data.items || [];
+                const html = items.map(item => `
+                    <div class="stat-row">
+                        <span class="stat-label">${item.symbol}</span>
+                        <span class="stat-value">
+                            Avg $${item.average_close.toFixed(2)},
+                            Range ${item.range_percent.toFixed(2)}%
+                        </span>
+                    </div>
+                `).join('');
+
+                compareContent.innerHTML = html || '<p>No data</p>';
+                compareResults.classList.add('show');
+            } catch (err) {
+                errorBox.textContent = err.message || 'Something went wrong';
+                errorBox.classList.add('show');
+            } finally {
+                compareButton.disabled = false;
+                compareButton.textContent = 'Compare';
             }
         });
     </script>
 </body>
 </html>
+
 

@@ -1,6 +1,7 @@
 import pytest
 
-from stats import fetch, make_key, _CACHE
+from stats import fetch
+from cache import make_key, _CACHE
 
 
 class TestKey:
