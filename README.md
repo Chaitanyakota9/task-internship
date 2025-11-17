@@ -45,8 +45,20 @@ curl -X POST "http://localhost:8000/api/stats/batch" \
 
 ## Testing
 
+### Unit Tests
 ```bash
 pytest
+```
+
+### Smoke Tests
+Smoke tests verify basic functionality after deployment. These are run in the CI/CD pipeline:
+
+1. **Health Endpoint** - `GET /health` returns healthy status
+2. **Main API Endpoint** - `GET /api/stats` with sample data returns valid response
+
+For local testing:
+```bash
+./scripts/smoke_tests.sh
 ```
 
 ## Project Structure
@@ -56,6 +68,9 @@ pytest
 ├── stats.py         # Stock statistics logic
 ├── tests/           # Test files
 ├── scripts/         # Helper scripts
+│   ├── docker-setup.sh    # Docker setup script
+│   ├── run_tests.sh       # Test runner script
+│   └── smoke_tests.sh     # Smoke tests for deployment
 ├── data/            # Sample CSV files
 └── index.html       # Web interface
 ```
@@ -110,7 +125,7 @@ Stage 3: Deploy (main branch only)
   - Tag image with version
   - Push to Docker Hub/ECR
   - Deploy to production (AWS ECS/GCP Cloud Run/Azure ACI)
-  - Run smoke tests
+  - Run smoke tests (2 tests: health check + main API endpoint)
   - Send notification
 ```
 
