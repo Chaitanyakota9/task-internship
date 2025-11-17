@@ -101,34 +101,20 @@ docker logs -f stock-api-container
 docker rm -f stock-api-container
 ```
 
-## CI/CD Pipeline Setup
+## CI/CD Pipeline
 
-**Automated workflow using GitHub Actions:**
+**Current setup:**
+- Unit tests run via pytest (14 tests)
+- Docker image can be built locally
+- Smoke tests available for deployment verification
 
-```
-Trigger: Push to main or Pull Request
+**To set up CI/CD:**
+1. Create `.github/workflows/ci-cd.yml` for automated testing
+2. Configure Docker Hub/registry credentials if needed
+3. Set up deployment targets (AWS ECS, GCP Cloud Run, etc.) as required
 
-Stage 1: Test
-  - Checkout repository
-  - Setup Python 3.13
-  - Install dependencies (pip install -r requirements.txt)
-  - Run pytest (14 tests)
-  - If tests fail → Stop pipeline
-
-Stage 2: Build
-  - Setup Docker Buildx
-  - Build image (docker build -t stock-api:latest .)
-  - Test container health (docker run + curl /health)
-  - If build/health fails → Stop pipeline
-
-Stage 3: Deploy (main branch only)
-  - Tag image with version
-  - Push to Docker Hub/ECR
-  - Deploy to production (AWS ECS/GCP Cloud Run/Azure ACI)
-  - Run smoke tests (2 tests: health check + main API endpoint)
-  - Send notification
-```
-
-**Pipeline execution time:** ~5-7 minutes
+**Smoke tests (2 tests):**
+- Health endpoint check
+- Main API endpoint verification
 
 MIT License   
